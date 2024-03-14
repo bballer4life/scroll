@@ -30,7 +30,7 @@ func NewPoSL1TestEnv() (*PoSL1TestEnv, error) {
 	}
 	httpPort := int(id.Int64() + 50000)
 
-	if err := os.Setenv("HTTP_PORT", strconv.Itoa(httpPort)); err != nil {
+	if err = os.Setenv("HTTP_PORT", strconv.Itoa(httpPort)); err != nil {
 		return nil, fmt.Errorf("failed to set HTTP_PORT environment variable: %w", err)
 	}
 
@@ -137,30 +137,30 @@ func (e *PoSL1TestEnv) waitForServicesToStart() error {
 		case <-timeout:
 			return fmt.Errorf("timed out waiting for PoS L1 test environment services to start")
 		case <-tick.C:
-			if output, err := cmd.Output(); err != nil {
+			output, err := cmd.Output()
+			if err != nil {
 				return fmt.Errorf("failed to execute docker-compose ps command: %w", err)
-			} else {
-				lines := strings.Split(string(output), "\n")
-				var beaconChainRunning bool
-				var validatorRunning bool
-				var gethRunning bool
-				for _, line := range lines {
-					fmt.Println("line", line)
-					if strings.Contains(line, "beacon") {
-						beaconChainRunning = true
-					}
-					if strings.Contains(line, "validator") {
-						validatorRunning = true
-					}
-					if strings.Contains(line, "geth") {
-						gethRunning = true
-					}
-				}
-				if beaconChainRunning && validatorRunning && gethRunning {
-					return nil
-				}
-				log.Info("Required services are not running, waiting...", "beaconChainRunning", beaconChainRunning, "validatorRunning", validatorRunning, "gethRunning", gethRunning)
 			}
+			lines := strings.Split(string(output), "\n")
+			var beaconChainRunning bool
+			var validatorRunning bool
+			var gethRunning bool
+			for _, line := range lines {
+				fmt.Println("line", line)
+				if strings.Contains(line, "beacon") {
+					beaconChainRunning = true
+				}
+				if strings.Contains(line, "validator") {
+					validatorRunning = true
+				}
+				if strings.Contains(line, "geth") {
+					gethRunning = true
+				}
+			}
+			if beaconChainRunning && validatorRunning && gethRunning {
+				return nil
+			}
+			log.Info("Required services are not running, waiting...", "beaconChainRunning", beaconChainRunning, "validatorRunning", validatorRunning, "gethRunning", gethRunning)
 		}
 	}
 }
